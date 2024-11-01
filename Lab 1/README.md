@@ -1,0 +1,1 @@
+The purpose of this lab was to determine, given different segments, whether they intersected and what type of intersection it was. Part of the code was provided by the Universitat Politècnica de Catalunya
