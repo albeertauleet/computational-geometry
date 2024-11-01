@@ -1,0 +1,334 @@
+<html>
+<head>
+<title>GEOC - Lab 1</title>
+</head>
+<script src ="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"><</script>
+<h1>GEOC - Lab 1</h1>
+<h2>Albert Aulet Niubó</h2>
+
+<br>
+Last mouse position on canvas: <span id="mousepos"></span>
+<br>
+<canvas id="canvas" width="1200" height="800"></canvas>
+<br>
+
+
+<script type="text/javascript" src="TestLab1.json.js"></script>
+
+
+
+<h2>Result of intersection classification</h2>
+<span id="result"></span>
+
+<script type="text/javascript">
+
+//========= Auxiliary objects and data =========//
+
+// Important: this is the input
+var segments = inputJSON.segments; // Requires inputJSON variable set in file
+//var segments = inputJSON.segments.slice(0,6); // You can use slice() to select a subset of the segments. Make sure it is an even number!
+
+var points = [];
+// See names colors at https://www.w3schools.com/colors/colors_names.asp
+// Add as many colors as needed to classify all intersection types
+var colors = ['Blue', 'Red', 'Green', 'Cyan', 'DarkOrange', 'Magenta', 'RosyBrown', 'CadetBlue', 'MediumBlue', 'DarkRed', 'BlueViolet', 'Tomato'];
+
+// default styles
+style = {
+  curve: {
+    width: 6,
+    color: "#333"
+  },
+  line: {
+    width: 1,
+    color: "#C00"
+  },
+  point: {
+    radius: 4,
+    width: 2,
+    color: "Black",
+    fill: "Black",
+    arc1: 0,
+    arc2: 2 * Math.PI
+  }
+}
+
+
+
+context1 = canvas.getContext("2d");
+drawCanvas();
+
+//========= Auxiliary functions =========//
+
+
+// Method to show mouse position relative to canvas as the mouse moves.
+canvas.addEventListener('mousemove', function(e) {
+	var rect = canvas.getBoundingClientRect();
+	var x = e.clientX - Math.round(rect.left);
+	var y = e.clientY - Math.round(rect.top);
+	document.getElementById("mousepos").innerHTML = "(" + x + ", " + y + ")";
+});
+
+function drawCanvas() {
+  // Clear everything
+  context1.clearRect(-canvas.width / 2, -canvas.height / 2, 2 * canvas.width, 2 * canvas.height);
+  // Draw whatever needs to be drawn
+  drawSegments(context1, style, segments); 
+
+}
+
+// Draws one point as circle
+function drawPoint(ctx, style, p) {
+    ctx.lineWidth = style.point.width;
+    ctx.strokeStyle = style.point.color;
+    ctx.fillStyle = style.point.fill;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, style.point.radius, style.point.arc1, style.point.arc2, true);
+    ctx.fill();
+    ctx.stroke();
+}
+
+// Draws one segment
+function drawSegment(ctx, style, segment, lineColor) {
+    p1 = segment.from;
+	p2 = segment.to;
+
+	// Line segment
+    ctx.lineWidth = style.line.width;
+	ctx.strokeStyle = lineColor;
+    ctx.beginPath();
+	ctx.moveTo(p1.x,p1.y);
+	ctx.lineTo(p2.x,p2.y);
+    ctx.stroke();
+			
+	// Draw vertices
+	drawPoint(ctx, style, segment.from);
+	drawPoint(ctx, style, segment.to);
+}
+
+// Draws all segments
+function drawSegments(ctx, style, segments) {
+	//For each pair draw pair after classifying intersection
+
+	for (var i = 0; i < segments.length; i=i+2) {
+		// Classify intersection and obtain color to draw pair of segments
+		var intersectionClass = classifyIntersection(segments[i], segments[i+1]);
+		reportResult(intersectionClass); // print description
+		var lineColor = colors[intersectionClass.type];
+		// Draw segment 
+		drawSegment(ctx, style, segments[i], lineColor);
+		drawSegment(ctx, style, segments[i+1], lineColor);
+	}
+}
+
+// Outputs the value of the intersection classification to the "results" HTML element
+function reportResult(intersectionClass) {
+	var text = "<font color='" + colors[intersectionClass.type] + "'>";
+	text = text + intersectionClass.type + ": " + intersectionClass.description;
+	text = text + "</font><br>";
+	document.getElementById("result").innerHTML = document.getElementById("result").innerHTML + text;
+}
+
+//========= Your code probably should be somewhere here =========//
+
+
+
+// TODO: Add your code here to classify all possible segment intersection types
+function sort(s1)  // i took this idea from my friend David who gave me permission to use it
+{
+	if (s1.from.x != s1.to.x)
+	{	
+		if (s1.to.x < s1.from.x)
+			{
+				var aux_x = s1.from.x;
+				var aux_y = s1.from.y;
+				s1.from.x = s1.to.x;
+				s1.from.y = s1.to.y;
+				s1.to.x = aux_x;
+				s1.to.y = aux_y;
+
+
+			}
+	
+	}
+	else 
+	{
+		if (s1.to.y < s1.from.y)
+		{
+			var aux = s1.from.y;
+			s1.from.y = s1.to.y;
+			s1.to.y = aux;
+		}
+	}
+	
+}
+
+
+function classifyIntersection(s1, s2) {
+	var intersectionType, intersectionTypeDescription;
+	// Dummy code: an absurd classification criterion
+
+	const mat1 = math.matrix([[s1.from.x, s1.to.x, s2.to.x], [s1.from.y, s1.to.y, s2.to.y], [1, 1, 1]]);
+	const mat2 = math.matrix([[s1.from.x, s1.to.x, s2.from.x], [s1.from.y, s1.to.y, s2.from.y], [1, 1, 1]]);
+	const mat3 = math.matrix([[s2.from.x, s2.to.x, s1.from.x], [s2.from.y, s2.to.y, s1.from.y], [1, 1, 1]]);
+	const mat4 = math.matrix([[s2.from.x, s2.to.x, s1.to.x], [s2.from.y, s2.to.y, s1.to.y], [1, 1, 1]]);
+		
+	var d_1 = math.det(mat1);
+	var d_2 = math.det(mat2);
+	var d_3 = math.det(mat3);
+	var d_4 = math.det (mat4);
+
+	if (d_1 == 0 && d_2 == 0)
+	{
+		sort(s1);
+		sort(s2);
+		// vertical cases
+		if (s1.from.x == s1.to.x)
+		{
+			if (s1.from.y == s2.from.y)
+			{
+				if (s1.to.y == s2.to.y)
+				{
+					intersectionType = 1;
+					intersectionTypeDescription = "Intersection: They are exactly the same";
+				}
+				else 
+				{
+					intersectionType = 2;
+					intersectionTypeDescription = "Intersection: One is inside the other having one equal end point"
+				}
+			}
+			else if (s1.to.y == s2.to.y)
+			{
+				intersectionType = 2;
+				intersectionTypeDescription = "Intersection: One is inside the other having one equal end point"
+			}
+			else if (s1.to.y == s2.from.y || s1.from.y == s2.to.y)
+			{
+				intersectionType = 3;
+				intersectionTypeDescription = "Intersection: Their only point of intersection is at an end point of both";
+			}
+			else if (s1.from.y < s2.from.y && s1.to.y > s2.to.y || s1.from.y > s2.from.y && s1.to.y < s2.to.y)
+			{
+				intersectionType = 5;
+				intersectionTypeDescription = "Intersection: One is completely inside the other";
+			}
+			else if ((s1.from.y < s2.from.y && s2.from.y < s1.to.y && s1.to.y < s2.to.y) || (s1.from.y > s2.from.y &&  s1.to.y > s2.to.y && s2.to.y > s1.from.y))
+			{
+				intersectionType = 6 
+				intersectionTypeDescription = "Intersection: One is partially inside the other, not having any end point in common";
+			}
+			else 
+			{
+				intersectionType = 4;
+				intersectionTypeDescription = "Not intersection: They do not intersect but are on the same line";
+			}
+		}
+		// other cases
+		else 
+		{
+			if (s1.from.x == s2.from.x)
+			{
+				if (s1.to.x == s2.to.x)
+				{
+					intersectionType = 1;
+					intersectionTypeDescription = "Intersection: They are exactly the same";
+				}
+				else 
+				{
+					intersectionType = 2;
+					intersectionTypeDescription = "Intersection: One is inside the other having one equal end point"
+				}
+			}
+			else if (s1.to.x == s2.to.x)
+			{
+				intersectionType = 2;
+				intersectionTypeDescription = "Intersection: One is inside the other having one equal end point"
+			}
+			else if (s1.to.x == s2.from.x || s1.from.x == s2.to.x)
+			{
+				intersectionType = 3;
+				intersectionTypeDescription = "Intersection: Their only point of intersection is at an end point of both";
+			}
+			else if (s1.from.x < s2.from.x && s1.to.x > s2.to.x || s1.from.x > s2.from.x && s1.to.x < s2.to.x)
+			{
+				intersectionType = 5;
+				intersectionTypeDescription = "Intersection: One is completely inside the other";
+			}
+			else if ((s1.from.x < s2.from.x && s2.from.x < s1.to.x && s1.to.x < s2.to.x) || (s1.from.x > s2.from.x &&  s1.to.x > s2.to.x && s2.to.x > s1.from.x))
+			{
+				intersectionType = 6 
+				intersectionTypeDescription = "Intersection: One is partially inside the other, not having any end point in common";
+			}
+			else 
+			{
+				intersectionType = 4;
+				intersectionTypeDescription = "Not intersection: They do not intersect but are on the same line";
+			}
+		}
+	}
+
+	else
+	{
+		if ((d_1 == 0 || d_2 == 0) && (d_3 == 0 || d_4  == 0))
+		{
+			
+			intersectionType = 3;
+			intersectionTypeDescription = "Intersection: Their only point of intersection is at an end point of both."
+		}	
+		else if (d_1 == 0 || d_2 == 0)
+		{
+			{
+				
+				if (d_3 > 0 && d_4 < 0 || d_3 < 0 && d_4 > 0)
+				{
+					intersectionType = 8;
+					intersectionTypeDescription = "Intersection: The end point of one segment is located inside the other"
+				}
+				else 
+				{
+					intersectionType = 11;
+					intersectionTypeDescription = "Not intersection: They do no intersect, but if they were up to it, would be coinciding in one end point of both"
+				}
+			}
+		}
+		else if (d_3 == 0 || d_4 == 0)
+		{
+			
+			if (d_1 > 0 && d_2 < 0 || d_1 < 0 && d_2 > 0)
+			{
+				intersectionType = 8;
+				intersectionTypeDescription = "Intersection: The end point of one segment is located inside the other"
+			}
+			else 
+			{
+				intersectionType = 11;
+				intersectionTypeDescription = "Not intersection: They do no intersect, but if they were up to it, would be coinciding in one end point of both"
+			}
+		}
+		else if ((d_1 > 0 && d_2 < 0 || d_1 < 0 && d_2 > 0) && (d_3 > 0 && d_4 < 0 || d_3 < 0 && d_4 > 0))
+		{
+			intersectionType = 7;
+			intersectionTypeDescription = "Intersection: They intersect in one point that is not an end point";
+		}
+		// at this point we know that they do not intersect
+		else if ((s2.to.y - s2.from.y)/(s2.to.x- s2.from.x) == (s1.to.y - s1.from.y)/(s1.to.x - s1.from.x))
+		{
+			intersectionType = 10;
+			intersectionTypeDescription = "Not intersection: They do not intersect but are parallel";
+		}
+
+		else 
+		{
+			intersectionType = 9;
+			intersectionTypeDescription = "Not intersection: They do not intersect";
+		}
+
+	}
+
+	return {"type": intersectionType, "description": intersectionTypeDescription} ;
+}
+
+
+</script>
+</html>
