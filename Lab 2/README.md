@@ -1,0 +1,1 @@
+The aim of this exercise was to determine, given 3 vertices and a point, whether the point was inside, on the edge or outside the triangle formed by the 3 vertices. Part of the code was provided by the Universitat Politècnica de Catalunya.
