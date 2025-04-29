@@ -1,11 +1,3 @@
-/**
- TODO Replace this by your own, correct, triangulation function
- Triangles should be return as arrays of array of indexes
- e.g., [[1,2,3],[2,3,4]] encodes two triangles, where the indices are relative to the array points
-**/
-
-
-
 class Node {
 	constructor(points) {
 		this.points = points;
@@ -51,9 +43,6 @@ function getBoundingPoints(points){
 }
 
 function computeTriangulation(points) {
-	// Wrong code! Just connects consecutive three after sorting by x-coord
-	// Note that this does NOT return a triangulation, just a subset of it
-	//var newPoints = points.sort(function(a,b) { if ((a.x) < (b.x)) return -1; else return 1;})
 	var BB = getBoundingPoints(points);
 
 	var W = BB.c - BB.a + 10;
@@ -251,7 +240,6 @@ function triangulate(node, p, points)
 
 
 function classifyPoint(p, triangle) {
-	// TODO Change this!
 	const mat1 = math.matrix([[triangle[0].x, triangle[1].x, p.x], [triangle[0].y, triangle[1].y, p.y], [1, 1, 1]]);
     const mat2 = math.matrix([[triangle[1].x, triangle[2].x, p.x], [triangle[1].y, triangle[2].y, p.y], [1, 1, 1]]);
     const mat3 = math.matrix([[triangle[2].x, triangle[0].x, p.x], [triangle[2].y, triangle[0].y, p.y], [1, 1, 1]]);
